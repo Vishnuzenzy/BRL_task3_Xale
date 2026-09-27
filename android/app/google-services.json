@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "599934601726",
+    "project_id": "xale-9d3fc",
+    "storage_bucket": "xale-9d3fc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:599934601726:android:5e32a3a31014015a6f98af",
+        "android_client_info": {
+          "package_name": "com.example.xale"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "599934601726-hktllk0n97hash3f15grofe2jti67ako.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqoC0P5vxLT9s5XYUcxgRBy0sC6Y7MIds"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "599934601726-hktllk0n97hash3f15grofe2jti67ako.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
