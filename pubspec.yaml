@@ -40,6 +40,7 @@ dependencies:
   provider: ^6.1.5+1
   font_awesome_flutter: ^11.0.0
   auth_buttons: ^3.0.3
+  cloud_firestore: ^6.10.0
 
 dev_dependencies:
   flutter_test:
