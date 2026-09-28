@@ -5,6 +5,7 @@ import '../../viewmodels/auth_viewmodel.dart';
 import '../../viewmodels/marketplace_viewmodel.dart';
 import '../../widgets/product_card.dart';
 import 'listing_screen.dart';
+import 'item_detail_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -82,7 +83,15 @@ class HomeScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 return ProductCard(
                   item: marketVM.listings[index],
-                  onTap: () {}, // Detail screen abhi pending hai
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            ItemDetailScreen(item: marketVM.listings[index]),
+                      ),
+                    );
+                  },
                 );
               },
             ),
