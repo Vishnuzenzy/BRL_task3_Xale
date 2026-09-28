@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../viewmodels/auth_viewmodel.dart';
 import '../../viewmodels/marketplace_viewmodel.dart';
 import '../../widgets/product_card.dart';
+import 'listing_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -46,8 +48,11 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.storefront_outlined,
-                      size: 70, color: Colors.grey.shade400),
+                  Icon(
+                    Icons.storefront_outlined,
+                    size: 70,
+                    color: Colors.grey.shade400,
+                  ),
                   const SizedBox(height: 12),
                   const Text(
                     "No items listed yet!",
@@ -86,8 +91,9 @@ class HomeScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Create Listing UI coming in next commit!")),
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ListingScreen()),
           );
         },
         icon: const Icon(Icons.add),
