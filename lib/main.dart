@@ -1,24 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'firebase_options.dart';
-import 'viewmodels/auth_viewmodel.dart';
-import 'viewmodels/marketplace_viewmodel.dart';
 import 'views/auth/auth_wrapper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AuthenticationProvider()),
-        ChangeNotifierProvider(
-          create: (_) => MarketplaceViewModel(),
-        ), // Add this line
-      ],
-      child: const MyApp(),
+    const ProviderScope( 
+      child: MyApp(),
     ),
   );
 }
