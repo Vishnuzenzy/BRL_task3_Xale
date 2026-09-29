@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import '../../viewmodels/marketplace_viewmodel.dart';
 
-class ListingScreen extends StatefulWidget {
+
+class ListingScreen extends ConsumerStatefulWidget {
   const ListingScreen({super.key});
 
   @override
-  State<ListingScreen> createState() => _ListingScreenState();
+  ConsumerState<ListingScreen> createState() => _ListingScreenState();
 }
 
-class _ListingScreenState extends State<ListingScreen> {
+class _ListingScreenState extends ConsumerState<ListingScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _priceController = TextEditingController();
@@ -29,31 +30,46 @@ class _ListingScreenState extends State<ListingScreen> {
   }
 
   Future<void> _submitListing() async {
-    if (!_formKey.currentState!.validate()) return;
-    setState(() => _isSubmitting = true);
+  if (!_formKey.currentState!.validate()) return;
+  setState(() => _isSubmitting = true);
 
-    final authVM = context.read<AuthenticationProvider>();
-    final marketVM = context.read<MarketplaceViewModel>();
+  try {
+    final authVM = ref.read(authProvider);
+    final marketVM = ref.read(marketplaceProvider);
     
+    // Invalid text par crash hone se bachane ke liye double.tryParse
+    final parsedPrice = double.tryParse(_priceController.text.trim()) ?? 0.0;
+
     final error = await marketVM.createListing(
       title: _titleController.text.trim(),
       description: _descController.text.trim(),
-      price: double.parse(_priceController.text.trim()),
+      price: parsedPrice,
       sellerId: authVM.user?.uid ?? 'unknown',
       imageUrl: _imageUrlController.text.trim(),
     );
 
-    setState(() => _isSubmitting = false);
-
     if (error != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error), backgroundColor: Colors.red),
+      );
     } else if (mounted) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Item listed successfully!")),
       );
     }
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Submission Error: $e"), backgroundColor: Colors.red),
+      );
+    }
+  } finally {
+    if (mounted) {
+      setState(() => _isSubmitting = false);
+    }
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -95,6 +111,7 @@ class _ListingScreenState extends State<ListingScreen> {
               child: _isSubmitting 
                   ? const CircularProgressIndicator() 
                   : const Text("List Item"),
+                  
             ),
           ],
         ),

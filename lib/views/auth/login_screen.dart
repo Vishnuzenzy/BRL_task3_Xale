@@ -1,26 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 
-import 'package:auth_buttons/auth_buttons.dart';
-
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isSignUp = false;
 
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   void _submit() async {
-    final auth = context.read<AuthenticationProvider>();
-    final email = _emailController.text;
+    final auth = ref.read(authProvider);
+    final email = _emailController.text.trim();
     final password = _passwordController.text;
 
     if (email.isEmpty || password.isEmpty) {
@@ -30,9 +35,10 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    // Named parameters use karne zaroori hain
     String? error = _isSignUp
-        ? await auth.signUp(email, password)
-        : await auth.signIn(email, password);
+        ? await auth.signUp(email: email, password: password)
+        : await auth.signIn(email: email, password: password);
 
     if (error != null && mounted) {
       ScaffoldMessenger.of(context)
@@ -42,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthenticationProvider>();
+    final auth = ref.watch(authProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -148,22 +154,32 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     onPressed: () async {
-                      String? error = await auth.signInWithGoogle();
-                      if (error != null && mounted) {
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(SnackBar(content: Text(error)));
+                      final authVM = ref.read(authProvider);
+                      String? error = await authVM.signInWithGoogle(
+                        isLoginScreen: !_isSignUp,
+                      );
+
+                      if (error != null && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(error),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
                       }
                     },
                   ),
                 ),
+                const SizedBox(height: 12),
 
                 // GitHub Sign In Button
                 SizedBox(
                   height: 50,
                   child: OutlinedButton.icon(
                     onPressed: () async {
-                      String? error = await auth.signInWithGitHub();
-                      if (error != null && mounted) {
+                      String? error =
+                          await ref.read(authProvider).signInWithGitHub();
+                      if (error != null && context.mounted) {
                         ScaffoldMessenger.of(context)
                             .showSnackBar(SnackBar(content: Text(error)));
                       }
