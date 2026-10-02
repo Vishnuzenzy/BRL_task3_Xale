@@ -45,16 +45,23 @@ lib/
 │   ├── auth/       # LoginScreen, SafeArea-wrapped vanishing hero banner
 │   └── home/       # HomeScreen, ListingScreen, ItemDetailScreen, AccountTab
 └── widgets/        # ProductCard with Wishlist sync, Search bar, Category bubbles
+```
+
+---
 
 ## 🚀 Getting Started
-# Prerequisites
+
+#### Prerequisites
+```
 • Flutter SDK (3.19+)
 
 • Android Studio / VS Code with Flutter extension
 
 • Android Device or Emulator with Internet connection
+```
 
-Installation
+#### Installation
+```
 1. Clone the repository:
 git clone https://github.com/your-username/xale.git
 cd xale
@@ -67,8 +74,10 @@ Ensure google-services.json is placed inside android/app/.
 
 4. Run the application:
 flutter run
+```
 
 ## 📦 Building Release APK
+
 To generate the standalone production APK:
 flutter build apk --release
 
