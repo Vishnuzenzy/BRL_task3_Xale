@@ -143,13 +143,40 @@ class _AccountTabState extends ConsumerState<AccountTab> {
         ),
         const SizedBox(height: 14),
 
-        // 4. LOGOUT
+        // 4. LOGOUT (With Confirmation Dialog)
         ListTile(
           tileColor: Colors.red.shade50,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           leading: const Icon(Icons.logout, color: Colors.red),
           title: const Text("Logout", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-          onTap: widget.onLogout,
+          trailing: const Icon(Icons.chevron_right, color: Colors.red),
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                title: const Text("Logout?", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF183661))),
+                content: const Text("Are you sure you want to log out of your XALE campus account?"),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text("Cancel", style: TextStyle(color: Colors.blueGrey)),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      widget.onLogout();
+                    },
+                    child: const Text("Logout", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ],
     );
