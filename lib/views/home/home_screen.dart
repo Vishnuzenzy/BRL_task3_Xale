@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../models/listing_model.dart';
 import '../../models/mock_marketplace_data.dart';
 import '../../viewmodels/auth_viewmodel.dart';
@@ -8,6 +9,7 @@ import '../../widgets/product_card.dart';
 import 'listing_screen.dart';
 import 'item_detail_screen.dart';
 import 'mock_detail_screen.dart';
+import 'account_tab.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -50,9 +52,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         final desc = (item.description ?? '').toString().toLowerCase();
         final cat = (item.category ?? '').toString().toLowerCase();
 
-        final matchSearch = title.contains(_searchQuery.toLowerCase()) ||
+        final matchSearch =
+            title.contains(_searchQuery.toLowerCase()) ||
             desc.contains(_searchQuery.toLowerCase());
-        final matchCat = _selectedCat == 'All' ||
+        final matchCat =
+            _selectedCat == 'All' ||
             cat == _selectedCat.toLowerCase() ||
             title.contains(_selectedCat.toLowerCase());
 
@@ -73,14 +77,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             SizedBox(width: 6),
             Text(
               "XALE",
-              style: TextStyle(color: Color(0xFF183661), fontWeight: FontWeight.w900, fontSize: 22),
+              style: TextStyle(
+                color: Color(0xFF183661),
+                fontWeight: FontWeight.w900,
+                fontSize: 22,
+              ),
             ),
             Spacer(),
             Icon(Icons.location_on_outlined, size: 16, color: Colors.black87),
             SizedBox(width: 4),
             Text(
               "Ghaziabad",
-              style: TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: Colors.black87,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -88,16 +100,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: _tabIndex == 0
           ? _buildHomeFeed(filteredListings)
           : _tabIndex == 1
-              ? _buildChatTab()
-              : _tabIndex == 2
-                  ? _buildMyAdsTab(realListings, authVM.user?.uid)
-                  : _buildAccountTab(authVM),
+          ? _buildChatTab()
+          : _tabIndex == 2
+          ? _buildMyAdsTab(realListings, authVM.user?.uid)
+          : AccountTab(
+              onLogout: () {
+                setState(() => _tabIndex = 0);
+                ref.read(authProvider).signOut();
+              },
+            ),
       floatingActionButton: _tabIndex == 0 || _tabIndex == 2
           ? FloatingActionButton.extended(
               backgroundColor: const Color(0xFF183661),
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ListingScreen())),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ListingScreen()),
+              ),
               icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text("SELL", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              label: const Text(
+                "SELL",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             )
           : null,
       bottomNavigationBar: NavigationBar(
@@ -106,10 +132,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         selectedIndex: _tabIndex,
         onDestinationSelected: (i) => setState(() => _tabIndex = i),
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.chat_bubble_outline_rounded), selectedIcon: Icon(Icons.chat_bubble_rounded), label: 'Chats'),
-          NavigationDestination(icon: Icon(Icons.receipt_long_outlined), selectedIcon: Icon(Icons.receipt_long), label: 'My Ads'),
-          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Account'),
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.chat_bubble_outline_rounded),
+            selectedIcon: Icon(Icons.chat_bubble_rounded),
+            label: 'Chats',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.receipt_long_outlined),
+            selectedIcon: Icon(Icons.receipt_long),
+            label: 'My Ads',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person),
+            label: 'Account',
+          ),
         ],
       ),
     );
@@ -133,7 +175,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               filled: true,
               fillColor: const Color(0xFFF2F4F7),
               contentPadding: EdgeInsets.zero,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
             ),
           ),
         ),
@@ -151,11 +196,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text("Browse Categories", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    const Text(
+                      "Browse Categories",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     if (_selectedCat != 'All')
                       GestureDetector(
                         onTap: () => setState(() => _selectedCat = 'All'),
-                        child: const Text("Clear Filter", style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 13)),
+                        child: const Text(
+                          "Clear Filter",
+                          style: TextStyle(
+                            color: Colors.blue,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
                       ),
                   ],
                 ),
@@ -184,13 +242,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: isSel ? const Color(0xFF183661) : Colors.grey.shade200,
+                                  color: isSel
+                                      ? const Color(0xFF183661)
+                                      : Colors.grey.shade200,
                                   width: isSel ? 2.5 : 1,
                                 ),
                               ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(14),
-                                child: Image.network(cat['img']!, fit: BoxFit.cover),
+                                child: Image.network(
+                                  cat['img']!,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             ),
                             const SizedBox(height: 6),
@@ -198,8 +261,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               cat['name']!,
                               style: TextStyle(
                                 fontSize: 12,
-                                fontWeight: isSel ? FontWeight.bold : FontWeight.w500,
-                                color: isSel ? const Color(0xFF183661) : Colors.black87,
+                                fontWeight: isSel
+                                    ? FontWeight.bold
+                                    : FontWeight.w500,
+                                color: isSel
+                                    ? const Color(0xFF183661)
+                                    : Colors.black87,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -227,8 +294,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("Campus Spotlight Deals 🔥", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    Text("Swipe →", style: TextStyle(fontSize: 12, color: Colors.blueGrey)),
+                    Text(
+                      "Campus Spotlight Deals 🔥",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      "Swipe →",
+                      style: TextStyle(fontSize: 12, color: Colors.blueGrey),
+                    ),
                   ],
                 ),
               ),
@@ -243,7 +319,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   itemBuilder: (_, i) {
                     final spot = kFeaturedSpotlight[i];
                     return GestureDetector(
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => MockDetailScreen(item: spot))),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => MockDetailScreen(item: spot),
+                        ),
+                      ),
                       child: Container(
                         width: 160,
                         margin: const EdgeInsets.symmetric(horizontal: 6),
@@ -256,17 +337,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             ClipRRect(
-                              borderRadius: const BorderRadius.vertical(top: Radius.circular(13)),
-                              child: Image.network(spot.imageUrl, height: 115, width: double.infinity, fit: BoxFit.cover),
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(13),
+                              ),
+                              child: Image.network(
+                                spot.imageUrl,
+                                height: 115,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                             Padding(
                               padding: const EdgeInsets.all(10),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('₹ ${spot.price}', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Color(0xFF183661))),
+                                  Text(
+                                    '₹ ${spot.price}',
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w800,
+                                      color: Color(0xFF183661),
+                                    ),
+                                  ),
                                   const SizedBox(height: 2),
-                                  Text(spot.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                                  Text(
+                                    spot.title,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -288,10 +391,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                _selectedCat == 'All' ? "Fresh Campus Listings" : "Showing '$_selectedCat'",
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                _selectedCat == 'All'
+                    ? "Fresh Campus Listings"
+                    : "Showing '$_selectedCat'",
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              Text("${items.length} items", style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600)),
+              Text(
+                "${items.length} items",
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
         ),
@@ -300,25 +415,42 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         if (items.isEmpty)
           const Padding(
             padding: EdgeInsets.all(32),
-            child: Center(child: Text("No items found. Tap '+ SELL' to add one!", style: TextStyle(color: Colors.blueGrey))),
+            child: Center(
+              child: Text(
+                "No items found. Tap '+ SELL' to add one!",
+                style: TextStyle(color: Colors.blueGrey),
+              ),
+            ),
           )
         else
-          ...items.map((listing) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                child: SizedBox(
-                  height: 125,
-                  child: ProductCard(
-                    item: listing,
-                    onTap: () {
-                      if (listing is MockListing) {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => MockDetailScreen(item: listing)));
-                      } else {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => ItemDetailScreen(item: listing)));
-                      }
-                    },
-                  ),
+          ...items.map(
+            (listing) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              child: SizedBox(
+                height: 125,
+                child: ProductCard(
+                  item: listing,
+                  onTap: () {
+                    if (listing is MockListing) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => MockDetailScreen(item: listing),
+                        ),
+                      );
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ItemDetailScreen(item: listing),
+                        ),
+                      );
+                    }
+                  },
                 ),
-              )),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -337,7 +469,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: const [
               Text(
                 "Campus Chats 💬",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Color(0xFF183661)),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF183661),
+                ),
               ),
               SizedBox(height: 4),
               Text(
@@ -360,18 +496,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       color: const Color(0xFF183661).withOpacity(0.08),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.forum_rounded, size: 56, color: Color(0xFF183661)),
+                    child: const Icon(
+                      Icons.forum_rounded,
+                      size: 56,
+                      color: Color(0xFF183661),
+                    ),
                   ),
                   const SizedBox(height: 18),
                   const Text(
                     "Feature Coming Soon!",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF183661)),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF183661),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   const Text(
                     "Real-time instant messaging with verified students and hostelers is under development. Stay tuned!",
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 14, color: Colors.blueGrey, height: 1.4),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.blueGrey,
+                      height: 1.4,
+                    ),
                   ),
                 ],
               ),
@@ -395,13 +543,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           padding: const EdgeInsets.fromLTRB(18, 14, 18, 14),
           child: Text(
             "My Posted Ads (${myAds.length})",
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF183661)),
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF183661),
+            ),
           ),
         ),
         Expanded(
           child: myAds.isEmpty
               ? const Center(
-                  child: Text("You haven't posted any ads yet. Tap + SELL to post!", style: TextStyle(color: Colors.blueGrey)),
+                  child: Text(
+                    "You haven't posted any ads yet. Tap + SELL to post!",
+                    style: TextStyle(color: Colors.blueGrey),
+                  ),
                 )
               : ListView.builder(
                   padding: const EdgeInsets.fromLTRB(12, 8, 12, 90),
@@ -410,7 +565,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     final ListingModel ad = myAds[i];
                     return Card(
                       margin: const EdgeInsets.symmetric(vertical: 6),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                       elevation: 1.5,
                       child: Column(
                         children: [
@@ -418,25 +575,53 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             height: 120,
                             child: ProductCard(
                               item: ad,
-                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ItemDetailScreen(item: ad))),
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ItemDetailScreen(item: ad),
+                                ),
+                              ),
                             ),
                           ),
                           const Divider(height: 1),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 TextButton.icon(
                                   onPressed: () => _showEditAdDialog(ad),
-                                  icon: const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF183661)),
-                                  label: const Text("Edit", style: TextStyle(color: Color(0xFF183661), fontWeight: FontWeight.bold)),
+                                  icon: const Icon(
+                                    Icons.edit_outlined,
+                                    size: 18,
+                                    color: Color(0xFF183661),
+                                  ),
+                                  label: const Text(
+                                    "Edit",
+                                    style: TextStyle(
+                                      color: Color(0xFF183661),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
                                 const SizedBox(width: 8),
                                 TextButton.icon(
                                   onPressed: () => _confirmDeleteAd(ad.id),
-                                  icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Colors.red),
-                                  label: const Text("Delete", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                                  icon: const Icon(
+                                    Icons.delete_outline_rounded,
+                                    size: 18,
+                                    color: Colors.red,
+                                  ),
+                                  label: const Text(
+                                    "Delete",
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -457,18 +642,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text("Delete Ad?"),
-        content: const Text("Are you sure you want to remove this listing from campus marketplace?"),
+        content: const Text(
+          "Are you sure you want to remove this listing from campus marketplace?",
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Cancel"),
+          ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
               Navigator.pop(ctx);
-              final err = await ref.read(marketplaceProvider).deleteListing(docId);
-             
+              final err = await ref
+                  .read(marketplaceProvider)
+                  .deleteListing(docId);
+
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(err == null ? "Ad deleted successfully" : "Error: $err")),
+                  SnackBar(
+                    content: Text(
+                      err == null ? "Ad deleted successfully" : "Error: $err",
+                    ),
+                  ),
                 );
               }
             },
@@ -484,13 +680,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final titleCtrl = TextEditingController(text: ad.title);
     final priceCtrl = TextEditingController(text: ad.price.toStringAsFixed(0));
     final descCtrl = TextEditingController(text: ad.description);
-    final categories = ['Watches', 'Mobiles', 'Bikes', 'Laptops', 'Books', 'Audio', 'Furniture', 'Other'];
-    String selectedCat = categories.contains(ad.category) ? ad.category : 'Other';
+    final categories = [
+      'Watches',
+      'Mobiles',
+      'Bikes',
+      'Laptops',
+      'Books',
+      'Audio',
+      'Furniture',
+      'Other',
+    ];
+    String selectedCat = categories.contains(ad.category)
+        ? ad.category
+        : 'Other';
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (ctx) {
         return StatefulBuilder(
           builder: (ctx, setSheetState) {
@@ -506,23 +715,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Edit Campus Ad", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF183661))),
+                    const Text(
+                      "Edit Campus Ad",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF183661),
+                      ),
+                    ),
                     const SizedBox(height: 14),
                     DropdownButtonFormField<String>(
                       value: selectedCat,
                       decoration: InputDecoration(
                         labelText: "Category",
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                      items: categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                      onChanged: (val) => setSheetState(() => selectedCat = val!),
+                      items: categories
+                          .map(
+                            (c) => DropdownMenuItem(value: c, child: Text(c)),
+                          )
+                          .toList(),
+                      onChanged: (val) =>
+                          setSheetState(() => selectedCat = val!),
                     ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: titleCtrl,
                       decoration: InputDecoration(
                         labelText: "Title",
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -531,7 +756,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         labelText: "Price (₹)",
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -540,7 +767,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       maxLines: 3,
                       decoration: InputDecoration(
                         labelText: "Description",
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 18),
@@ -550,32 +779,47 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF183661),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         onPressed: () async {
                           final newTitle = titleCtrl.text.trim();
                           final newDesc = descCtrl.text.trim();
-                          final newPrice = double.tryParse(priceCtrl.text.trim()) ?? ad.price;
+                          final newPrice =
+                              double.tryParse(priceCtrl.text.trim()) ??
+                              ad.price;
 
                           Navigator.pop(ctx);
-                          
+
                           // Named arguments pass kar rahe hain jaisa ViewModel expect kar raha hai
-                          final err = await ref.read(marketplaceProvider).updateListing(
-                            id: ad.id,
-                            title: newTitle,
-                            description: newDesc,
-                            price: newPrice,
-                            category: selectedCat,
-                          );
-                          
-                          
+                          final err = await ref
+                              .read(marketplaceProvider)
+                              .updateListing(
+                                id: ad.id,
+                                title: newTitle,
+                                description: newDesc,
+                                price: newPrice,
+                                category: selectedCat,
+                              );
+
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(err == null ? "Ad updated!" : "Error: $err")),
+                              SnackBar(
+                                content: Text(
+                                  err == null ? "Ad updated!" : "Error: $err",
+                                ),
+                              ),
                             );
                           }
                         },
-                        child: const Text("Save Changes", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        child: const Text(
+                          "Save Changes",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -585,34 +829,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           },
         );
       },
-    );
-  }
-
-  // TAB 3: ACCOUNT TAB
-  Widget _buildAccountTab(dynamic authVM) {
-    final email = authVM.user?.email ?? "Campus Student";
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        ListTile(
-          tileColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          leading: const CircleAvatar(backgroundColor: Color(0xFF183661), child: Icon(Icons.person, color: Colors.white)),
-          title: Text(email.split('@').first.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold)),
-          subtitle: Text(email),
-        ),
-        const SizedBox(height: 12),
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text("Logout", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-            onTap: () {
-              setState(() => _tabIndex = 0);
-              ref.read(authProvider).signOut();
-            },
-          ),
-        ),
-      ],
     );
   }
 }
