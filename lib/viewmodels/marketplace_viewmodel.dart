@@ -1,7 +1,19 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
+
 import '../models/listing_model.dart';
 import '../services/firestore_service.dart';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:firebase_storage/firebase_storage.dart';
+
+final marketplaceProvider = Provider<MarketplaceViewModel>((ref) {
+  return MarketplaceViewModel();
+});
 
 class MarketplaceViewModel with ChangeNotifier {
   final FirestoreService _firestoreService = FirestoreService();
@@ -60,6 +72,33 @@ class MarketplaceViewModel with ChangeNotifier {
       return null;
     } catch (e) {
       return e.toString();
+    }
+  }
+
+  Future<String?> uploadImage(File imageFile) async {
+    // Apne Cloudinary dashboard ki details yahan dalein
+    const cloudName = 'nwvgdxul'; 
+    const uploadPreset = 'xale_preset';
+
+    final uri = Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/image/upload');
+
+    try {
+      final request = http.MultipartRequest('POST', uri)
+        ..fields['upload_preset'] = uploadPreset
+        ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        // Cloudinary se direct https URL milta hai
+        return data['secure_url'] as String;
+      } else {
+        throw "Upload failed with status: ${response.statusCode}";
+      }
+    } catch (e) {
+      throw "Cloudinary Error: $e";
     }
   }
 
