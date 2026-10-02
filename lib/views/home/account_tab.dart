@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/mock_marketplace_data.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import '../../widgets/product_card.dart';
-import 'item_detail_screen.dart';
+
 import 'mock_detail_screen.dart';
 
 class AccountTab extends ConsumerStatefulWidget {
@@ -290,11 +290,14 @@ class _AccountTabState extends ConsumerState<AccountTab> {
                                 item: item,
                                 onTap: () {
                                   Navigator.pop(ctx);
-                                  if (item is MockListing) {
-                                    Navigator.push(context, MaterialPageRoute(builder: (_) => MockDetailScreen(item: item)));
-                                  } else {
-                                    Navigator.push(context, MaterialPageRoute(builder: (_) => ItemDetailScreen(item: item)));
-                                  }
+                                  final mockObj = MockListing(
+                                    title: (item is Map ? item['title'] : item.title).toString(),
+                                    price: (item is Map ? item['price'] : item.price).toString(),
+                                    description: (item is Map ? item['description'] : item.description).toString(),
+                                    imageUrl: (item is Map ? item['imageUrl'] : item.imageUrl).toString(),
+                                    category: (item is Map ? item['category'] : item.category).toString(),
+                                  );
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => MockDetailScreen(item: mockObj)));
                                 },
                               ),
                             );
