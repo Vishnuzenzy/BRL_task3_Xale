@@ -9,7 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:firebase_storage/firebase_storage.dart';
+
 
 final marketplaceProvider = Provider<MarketplaceViewModel>((ref) {
   return MarketplaceViewModel();
@@ -57,6 +57,7 @@ class MarketplaceViewModel with ChangeNotifier {
     required double price,
     required String sellerId,
     required String imageUrl,
+    String category = 'Other',
   }) async {
     try {
       final newListing = ListingModel(
@@ -66,6 +67,7 @@ class MarketplaceViewModel with ChangeNotifier {
         price: price,
         sellerId: sellerId,
         imageUrl: imageUrl,
+        category: category,
         createdAt: DateTime.now(),
       );
       await _firestoreService.addListing(newListing);
