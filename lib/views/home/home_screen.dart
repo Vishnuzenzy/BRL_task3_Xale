@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../viewmodels/auth_viewmodel.dart';
 import '../../viewmodels/marketplace_viewmodel.dart';
@@ -7,25 +7,23 @@ import '../../widgets/product_card.dart';
 import 'listing_screen.dart';
 import 'item_detail_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final authVM = context.watch<AuthenticationProvider>();
-    final marketVM = context.watch<MarketplaceViewModel>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    
+    final marketVM = ref.watch(marketplaceProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Campus Marketplace",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: const Text("Campus Marketplace"),
         actions: [
           IconButton(
-            tooltip: "Logout",
             icon: const Icon(Icons.logout),
-            onPressed: () => authVM.signOut(),
+            onPressed: () {
+              ref.read(authProvider).signOut();
+            },
           ),
         ],
       ),
