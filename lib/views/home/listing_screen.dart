@@ -13,13 +13,24 @@ class ListingScreen extends ConsumerStatefulWidget {
 }
 
 class _ListingScreenState extends ConsumerState<ListingScreen> {
-  final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _priceController = TextEditingController();
   final _descController = TextEditingController();
-  
-  File? _selectedImage;
-  bool _isSubmitting = false;
+
+  final List<String> _categoryOptions = [
+    'Watches',
+    'Mobiles',
+    'Bikes',
+    'Laptops',
+    'Books',
+    'Audio',
+    'Furniture',
+    'Other',
+  ];
+  String _selectedCategory = 'Watches';
+
+  File? _imageFile;
+  bool _isUploading = false;
 
   @override
   void dispose() {
@@ -29,138 +40,202 @@ class _ListingScreenState extends ConsumerState<ListingScreen> {
     super.dispose();
   }
 
-  // Gallery se photo select karne ka method
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 70, // Size optimize karne ke liye
-    );
-
-    if (pickedFile != null) {
-      setState(() {
-        _selectedImage = File(pickedFile.path);
-      });
+    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    if (picked != null) {
+      setState(() => _imageFile = File(picked.path));
     }
   }
 
   Future<void> _submitListing() async {
-    if (!_formKey.currentState!.validate()) return;
-    
-    if (_selectedImage == null) {
+    final title = _titleController.text.trim();
+    final priceStr = _priceController.text.trim();
+    final desc = _descController.text.trim();
+
+    if (title.isEmpty || priceStr.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select an item photo"), backgroundColor: Colors.orange),
+        const SnackBar(content: Text('Please enter Title and Price')),
       );
       return;
     }
 
-    setState(() => _isSubmitting = true);
+    final price = double.tryParse(priceStr);
+    if (price == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid numeric Price')),
+      );
+      return;
+    }
+
+    setState(() => _isUploading = true);
+
+    final authVM = ref.read(authProvider);
+    final marketVM = ref.read(marketplaceProvider);
 
     try {
-      final authVM = ref.read(authProvider);
-      final marketVM = ref.read(marketplaceProvider);
-      
-      // 1. Image upload to Firebase Storage
-      final imageUrl = await marketVM.uploadImage(_selectedImage!);
-      if (imageUrl == null) {
-        throw "Failed to upload image. Please check your connection.";
+      String uploadedImageUrl = '';
+      if (_imageFile != null) {
+        final res = await marketVM.uploadImage(_imageFile!);
+        uploadedImageUrl = res ?? '';
       }
 
-      final parsedPrice = double.tryParse(_priceController.text.trim()) ?? 0.0;
-
-      // 2. Listing document creation in Firestore
       final error = await marketVM.createListing(
-        title: _titleController.text.trim(),
-        description: _descController.text.trim(),
-        price: parsedPrice,
-        sellerId: authVM.user?.uid ?? 'unknown',
-        imageUrl: imageUrl,
+        title: title,
+        description: desc,
+        price: price,
+        sellerId: authVM.user?.uid ?? '',
+        imageUrl: uploadedImageUrl,
+        category: _selectedCategory,
       );
 
-      if (error != null && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error), backgroundColor: Colors.red),
-        );
-      } else if (mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Item listed successfully!")),
-        );
+      if (mounted) {
+        if (error == null) {
+          ref.invalidate(marketplaceProvider);
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Ad posted successfully!')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $error')),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+          SnackBar(content: Text('Failed: $e')),
         );
       }
     } finally {
-      if (mounted) {
-        setState(() => _isSubmitting = false);
-      }
+      if (mounted) setState(() => _isUploading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Sell an Item")),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16.0),
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        title: const Text('Post Campus Ad', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF183661))),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        iconTheme: const IconThemeData(color: Color(0xFF183661)),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image Picker Tap Container
+            // Image Picker Box
             GestureDetector(
-              onTap: _pickImage,
+              onTap: _isUploading ? null : _pickImage,
               child: Container(
                 height: 180,
+                width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade400),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade300),
                 ),
-                child: _selectedImage != null
+                child: _imageFile != null
                     ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.file(_selectedImage!, fit: BoxFit.cover, width: double.infinity),
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.file(_imageFile!, fit: BoxFit.cover),
                       )
                     : Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: const [
-                          Icon(Icons.add_a_photo_outlined, size: 48, color: Colors.grey),
+                          Icon(Icons.add_a_photo_outlined, size: 44, color: Color(0xFF183661)),
                           SizedBox(height: 8),
-                          Text("Tap to select item photo", style: TextStyle(color: Colors.black54)),
+                          Text('Add Product Photo', style: TextStyle(color: Colors.blueGrey, fontWeight: FontWeight.w600)),
                         ],
                       ),
               ),
             ),
+            const SizedBox(height: 20),
+
+            // Category Selector
+            const Text("Item Category", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: _selectedCategory,
+                  isExpanded: true,
+                  icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF183661)),
+                  items: _categoryOptions.map((cat) {
+                    return DropdownMenuItem(value: cat, child: Text(cat, style: const TextStyle(fontWeight: FontWeight.w500)));
+                  }).toList(),
+                  onChanged: (val) => setState(() => _selectedCategory = val!),
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
-            TextFormField(
+
+            // Title
+            TextField(
               controller: _titleController,
-              decoration: const InputDecoration(labelText: "Title", border: OutlineInputBorder()),
-              validator: (val) => val!.isEmpty ? "Enter a title" : null,
+              decoration: InputDecoration(
+                labelText: 'Item Title (e.g. Casio fx-991EX, Fastrack Watch)',
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
             ),
             const SizedBox(height: 16),
-            TextFormField(
+
+            // Price
+            TextField(
               controller: _priceController,
-              decoration: const InputDecoration(labelText: "Price (₹)", prefixText: "₹ ", border: OutlineInputBorder()),
               keyboardType: TextInputType.number,
-              validator: (val) => val!.isEmpty ? "Enter price" : null,
+              decoration: InputDecoration(
+                labelText: 'Price (₹)',
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
             ),
             const SizedBox(height: 16),
-            TextFormField(
+
+            // Description
+            TextField(
               controller: _descController,
-              decoration: const InputDecoration(labelText: "Description", border: OutlineInputBorder()),
               maxLines: 3,
-              validator: (val) => val!.isEmpty ? "Enter description" : null,
+              decoration: InputDecoration(
+                labelText: 'Description (Condition, Hostel / Meetup spot)',
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
             ),
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _isSubmitting ? null : _submitListing,
-              style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
-              child: _isSubmitting 
-                  ? const CircularProgressIndicator(color: Colors.white) 
-                  : const Text("List Item", style: TextStyle(fontSize: 16)),
+
+            // Submit Button
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: _isUploading ? null : _submitListing,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF183661),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: _isUploading
+                    ? const SizedBox(
+                        height: 22,
+                        width: 22,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      )
+                    : const Text('Post Ad Now', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+              ),
             ),
           ],
         ),
